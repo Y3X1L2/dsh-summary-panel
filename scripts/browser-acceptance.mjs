@@ -11,7 +11,7 @@ try{
  await page.route('http://dsh-summary.test/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html>'}));
  await page.goto('http://dsh-summary.test/');
  await page.setContent(`<!doctype html><html lang="zh"><meta charset="utf-8"><style>${readFileSync(new URL('../test/fixtures/theme.css',import.meta.url),'utf8')}
- body{margin:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif}#fixture{display:grid;grid-template-columns:180px minmax(0,1fr) 380px;height:100vh}#fixture[data-rightbar-collapsed]{grid-template-columns:180px minmax(0,1fr) 0}nav{background:var(--dsw-specific-sidebar-fill);padding:20px}main{min-width:0;display:flex;flex-direction:column}header{display:flex;align-items:center;gap:10px;padding:14px 18px;height:40px}#header-actions{margin-left:auto}[data-conversation-session]{--dsh-chat-content-width:var(--dsh-chat-user-width,clamp(680px,calc(var(--dsh-conversation-column-width,0px) * .64),920px));flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;position:relative}[data-conversation-scroll]{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;scrollbar-gutter:stable;margin-right:2px}.slot{display:contents}.transcript{flex:1 0 auto;display:flex;flex-direction:column;min-width:0}.chat-frame{container-type:inline-size;flex:none}.chat-scroll{padding:16px 32px;container-type:inline-size;overflow:clip visible}#text{width:100%;max-width:var(--dsh-chat-content-width);margin:24px auto;line-height:1.8}.md-table-wide{width:100cqw;margin-left:calc((100% - 100cqw) / 2);overflow:auto}.md-table-wide table{width:100%;border-collapse:collapse}.md-table-wide td{padding:12px;border-block:1px solid #8883}.code-block{overflow:auto;max-width:100%;background:#8881;padding:12px;box-sizing:border-box}.composer-seat{padding:12px 16px;flex:none}textarea{display:block;box-sizing:border-box;width:calc(var(--dsh-chat-content-width) + 32px);max-width:100%;height:80px;margin:0 auto;resize:none}#right{padding:12px;background:var(--dsw-alias-bg-base);overflow:auto}#fixture[data-rightbar-collapsed] #right{display:none}[data-width-handle]{position:absolute;top:0;bottom:0;width:10px;cursor:col-resize;z-index:1}[data-width-handle=right]{left:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}[data-width-handle=left]{right:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}button{font:inherit}
+ body{margin:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif}#fixture{display:grid;grid-template-columns:180px minmax(0,1fr) 380px;height:100vh;transition:grid-template-columns 240ms ease}#fixture[data-rightbar-collapsed]{grid-template-columns:180px minmax(0,1fr) 0}nav{background:var(--dsw-specific-sidebar-fill);padding:20px}main{min-width:0;display:flex;flex-direction:column}header{display:flex;align-items:center;gap:10px;padding:14px 18px;height:40px}#header-actions{margin-left:auto}[data-conversation-session]{--dsh-chat-content-width:var(--dsh-chat-user-width,clamp(680px,calc(var(--dsh-conversation-column-width,0px) * .64),920px));flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;position:relative}[data-conversation-scroll]{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;scrollbar-gutter:stable;margin-right:2px}.slot{display:contents}.transcript{flex:1 0 auto;display:flex;flex-direction:column;min-width:0}.chat-frame{container-type:inline-size;flex:none}.chat-scroll{padding:16px 32px;container-type:inline-size;overflow:clip visible}#text{width:100%;max-width:var(--dsh-chat-content-width);margin:24px auto;line-height:1.8}.md-table-wide{width:100cqw;margin-left:calc((100% - 100cqw) / 2);overflow:auto}.md-table-wide table{width:100%;border-collapse:collapse}.md-table-wide td{padding:12px;border-block:1px solid #8883}.code-block{overflow:auto;max-width:100%;background:#8881;padding:12px;box-sizing:border-box}.composer-seat{padding:12px 16px;flex:none}textarea{display:block;box-sizing:border-box;width:calc(var(--dsh-chat-content-width) + 32px);max-width:100%;height:80px;margin:0 auto;resize:none}#right{padding:12px;background:var(--dsw-alias-bg-base);overflow:auto}#fixture[data-rightbar-collapsed] #right{display:none}[data-width-handle]{position:absolute;top:0;bottom:0;width:10px;cursor:col-resize;z-index:1}[data-width-handle=right]{left:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}[data-width-handle=left]{right:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}button{font:inherit}
  </style><div id="fixture" data-rightbar-collapsed><nav>DeepSeek Harness<br>验收会话</nav><main><header>摘要面板验收 <div id="header-actions"></div></header><div data-conversation-session="qa-session"><div data-conversation-scroll><div class="slot" data-slot="conversation.session"><div class="transcript"><div class="slot" data-slot="conversation.chat"><div class="chat-frame"><div class="chat-scroll"><div id="text" data-chat-flow><h2>正文排版检查</h2><p>打开摘要时，对话正文和输入框为右侧卡片让出空间。手动调整对话宽度或展开右侧边栏后，可以自由调整布局。完整列表和文件预览使用右侧边栏。</p><div class="md-table-wide"><table><tbody><tr><td>宽表格</td><td>正文与输入框应同时为摘要卡片让位</td></tr><tr><td>来源</td><td>表格可在自己的容器内横向滚动</td></tr></tbody></table></div><pre class="code-block">const output = await createDocument();\nawait present(output);</pre><p>浏览器交互验收示例。</p></div></div></div></div></div></div><div class="composer-seat"><textarea id="composer" aria-label="消息输入框">保留原有草稿</textarea></div></div><div data-width-handle="left"></div><div data-width-handle="right"></div></div></main><aside id="right" data-rightbar-col aria-label="右侧边栏">文件 / 浏览器</aside></div>`);
  await page.evaluate(()=>{
   const session=document.querySelector('[data-conversation-session]');
@@ -68,9 +68,38 @@ try{
  assert.equal(await page.locator('.dsp-independent-rail').count(),0,'Header preloads before the card opens');
  const bounds=()=>page.locator('#text').boundingBox();
  const settle=()=>page.evaluate(async()=>{await Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{})));});
+ const assertSynchronizedMotion=async()=>{
+  const samples=await page.evaluate(()=>{
+   const session=document.querySelector('[data-conversation-session]');
+   const scroll=session.querySelector('[data-conversation-scroll]');
+   const panel=session.querySelector('.dsp-independent-rail>.dsp-panel');
+   getComputedStyle(session).getPropertyValue('--dsp-reveal');
+   const animation=session.getAnimations().find(a=>a.transitionProperty==='--dsp-reveal');
+   if(!animation)throw Error('Missing shared reveal transition');
+   animation.pause();
+   const samples=[];
+   for(const time of [0,60,120,180,240]){
+    animation.currentTime=time;
+    const owner=getComputedStyle(session),style=getComputedStyle(panel);
+    const progress=Number(owner.getPropertyValue('--dsp-reveal'));
+    const reserved=parseFloat(owner.getPropertyValue('--dsp-reserved'));
+    samples.push({progress,padding:parseFloat(getComputedStyle(scroll).paddingRight),reserved,translation:new DOMMatrix(style.transform).m41,width:panel.offsetWidth,textX:session.querySelector('[data-chat-flow]').getBoundingClientRect().x});
+   }
+   animation.currentTime=0;animation.play();return samples;
+  });
+  assert.ok(samples.some(s=>s.progress>0.1&&s.progress<0.99),'Sample intermediate motion frames');
+  const first=samples[0],last=samples.at(-1);
+  for(const sample of samples){
+   const fraction=(sample.progress-first.progress)/(last.progress-first.progress);
+   assert.ok(Math.abs(sample.textX-(first.textX+(last.textX-first.textX)*fraction))<0.1,'Visible text moves with the same normalized progress');
+   assert.ok(Math.abs(sample.padding-sample.reserved*sample.progress)<0.1,'Transcript uses the shared progress on every frame');
+   assert.ok(Math.abs(sample.translation-sample.width*(1-sample.progress))<0.1,'Card uses exactly the same progress on every frame');
+  }
+ };
  const before=await bounds();
  await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();
  await page.getByRole('button',{name:'查看全部 8 个文件',exact:true}).waitFor();
+ await assertSynchronizedMotion();
  await settle();
  const shifted=await bounds();
  assert.ok(Math.abs(shifted.width-before.width)<=1,'Wide conversations keep their text width');
@@ -78,7 +107,7 @@ try{
  const rail=page.getByRole('complementary',{name:'会话摘要'});
  assert.equal(await rail.locator('.dsp-rail-heading').count(),0,'No summary title or close chrome above card');
  assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).fontSize),'13px');
- assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).animationName),'dsp-card-enter');
+ assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal');
  assert.equal(await rail.evaluate(el=>getComputedStyle(el).overflowX),'hidden');
  const cardBounds=await rail.locator('.dsp-card').boundingBox(),sceneBounds=await page.locator('[data-conversation-session]').boundingBox();
  assert.ok(shifted.x+shifted.width<=cardBounds.x-8,'Text must stay left of the summary');
@@ -112,8 +141,8 @@ try{
  }
  // Animation may already be finished, so inspect the authored keyframes too.
  const animationCss=await page.locator('style[data-plugin="dsh-summary-panel"]').textContent();
- assert.match(animationCss,/@keyframes dsp-card-enter\{from\{transform:translateX\(100%\)\}/);
- assert.match(animationCss,/@keyframes dsp-card-exit\{from\{transform:translateX\(0\)\}to\{transform:translateX\(100%\)\}/);
+ assert.match(animationCss,/@property --dsp-reveal/);
+ assert.match(animationCss,/transform:translateX\(calc\(\(1 - var\(--dsp-reveal\)\) \* 100%\)\)/);
  assert.ok(cardBounds.height<=340,`Compact summary with four file previews and web sources is too tall: ${cardBounds.height}`);
  assert.ok(cardBounds.y-sceneBounds.y<=12,'Card starts near the top of the conversation scene');
  // A wide conversation retains the same center throughout the first drag.
@@ -127,6 +156,7 @@ try{
  assert.ok(Math.abs(wideDragged.width-shifted.width-24)<=1);
  assert.ok(Math.abs((wideDragged.x+wideDragged.width/2)-(shifted.x+shifted.width/2))<=1,'Wide drag keeps its existing center axis');
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
+ await assertSynchronizedMotion();
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  await page.evaluate(()=>{localStorage.removeItem('dsh.conversation.contentWidth');document.querySelector('main').style.removeProperty('--dsh-chat-user-width');});
  await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
@@ -139,8 +169,39 @@ try{
  await page.waitForFunction(()=>document.querySelector('#text').getBoundingClientRect().width>900);await settle();
  await page.getByRole('button',{name:'查看全部 8 个文件',exact:true}).click();
  await page.locator('#right').getByRole('textbox',{name:'搜索摘要条目'}).waitFor();
- await settle();
+ await page.waitForFunction(()=>document.querySelector('.dsp-independent-rail')?.dataset.state==='closing');
+ assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal','Sidebar opening uses the shared close transition');
+ await page.locator('.dsp-independent-rail').waitFor({state:'detached'});await settle();
  assert.equal(await page.locator('.dsp-content-shifted').count(),0,'Opening native sidebar returns the conversation to native layout');
+ const assertReturnedLayout=async()=>{
+  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).waitFor();
+  await page.waitForFunction(()=>{const s=document.querySelector('[data-conversation-session]');return s.classList.contains('dsp-content-shifted')&&getComputedStyle(s).getPropertyValue('--dsh-conversation-column-width').trim()===`${s.offsetWidth}px`;});
+  await settle();
+  const text=await bounds(),card=await rail.locator('.dsp-card').boundingBox(),scene=await page.locator('[data-conversation-session]').boundingBox();
+  assert.ok(text.x+text.width<=card.x-8,'Returning from sidebar must reserve space for text');
+  assert.ok(Math.abs(text.x-scene.x-(card.x-text.x-text.width))<=2,'Return restores balanced margins');
+  assert.equal(await page.evaluate(()=>qa.followCalls),1,'Sidebar round trips retain the shared feed');
+ };
+ await page.evaluate(()=>qa.setSidebar(false));
+ await assertReturnedLayout();
+ // A second open hides it again; manually opening it over the sidebar remains
+ // allowed, and closing the sidebar must rebuild the balanced text layout.
+ await page.evaluate(()=>qa.setSidebar(true));
+ await page.locator('.dsp-independent-rail').waitFor({state:'detached'});await settle();
+ await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
+ assert.equal(await page.locator('.dsp-content-shifted').count(),0,'Manual summary inside sidebar overlays the native layout');
+ await page.evaluate(()=>qa.setSidebar(false));
+ await assertReturnedLayout();
+ // Reversing the sidebar while the summary is sliding out cancels its pending
+ // removal and keeps exactly one working card.
+ await page.evaluate(()=>qa.setSidebar(true));
+ await page.waitForFunction(()=>document.querySelector('.dsp-independent-rail')?.dataset.state==='closing');
+ await page.evaluate(()=>qa.setSidebar(false));
+ await assertReturnedLayout();assert.equal(await rail.count(),1);
+ // Continue exercising the detail tabs with a manually reopened overlay card.
+ await page.evaluate(()=>qa.setSidebar(true));
+ await page.locator('.dsp-independent-rail').waitFor({state:'detached'});await settle();
+ await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
  assert.equal(await page.locator('#right').getByRole('button',{name:/result-\d.md/}).count(),8);
  assert.equal(await rail.locator('[data-dsh-summary-panel]').getAttribute('data-dsh-summary-panel'),'summary');
  await page.locator('#right').getByRole('textbox',{name:'搜索摘要条目'}).fill('result-8');
@@ -198,7 +259,7 @@ try{
  assert.notEqual(themeResults.light.background,themeResults.dark.background);
  assert.notEqual(themeResults.light.color,themeResults.dark.color);
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
- assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).animationName),'dsp-card-exit');
+ assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal');
  assert.equal(await rail.evaluate(el=>getComputedStyle(el).overflowX),'hidden');
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  const nativeOverlay=await bounds();
@@ -227,10 +288,12 @@ try{
  // Narrow normal layout caps the initial width; a subsequent native width
  // gesture can expand under the card, without shifting its left edge offscreen.
  await page.evaluate(()=>{qa.setSidebar(false);document.querySelector('#overlap-probe').remove();});
+ await settle();
+ assert.equal(await rail.count(),0,'An explicitly closed summary stays closed when returning from sidebar');
  await page.setViewportSize({width:1100,height:1000});
  await page.waitForFunction(()=>{const session=document.querySelector('[data-conversation-session]');return session.offsetWidth===920&&getComputedStyle(session).getPropertyValue('--dsh-conversation-column-width').trim()==='920px';});
  const narrowBefore=await bounds();
- await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
+ await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await assertSynchronizedMotion();await settle();
  const narrowText=await bounds(),narrowCard=await rail.locator('.dsp-card').boundingBox();
  assert.ok(narrowText.width<narrowBefore.width,'Narrow columns cap the initial text width');
  assert.ok(narrowText.x+narrowText.width<=narrowCard.x-8,'Narrow normal layout avoids overlap');
@@ -281,7 +344,7 @@ try{
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();
- assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).animationDuration),'0.001s');
+ assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionDuration),'0.001s');
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  const nativeHandle=await page.locator('[data-width-handle=right]').boundingBox();
@@ -290,6 +353,6 @@ try{
  assert.equal(await page.evaluate(()=>qa.nativeDragStarts),1,'After closing, native width controls work normally');
  assert.equal(await page.locator('[data-dsp-layout-root]').count(),0,'Layout markers are removed on close');
  assert.deepEqual(errors,[]);
- const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','wide and narrow margins balance within two pixels','real pointer-down does not recenter text','dragging begins at displayed width','both handles continue from current manual width','manual preference persists without competing native drag','wide drag preserves its previous center axis','lost capture cancels cleanly','native width controls resume after closing','display-contents slot wrappers move with shared scroll layout','wide tables and code blocks stay inside available area','expanded sidebar keeps native geometry','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
+ const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','card and transcript share one reveal timeline','opening and closing match at five intermediate motion samples','visible text matches card progress in wide and narrow layouts','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','wide and narrow margins balance within two pixels','real pointer-down does not recenter text','dragging begins at displayed width','both handles continue from current manual width','manual preference persists without competing native drag','wide drag preserves its previous center axis','lost capture cancels cleanly','native width controls resume after closing','display-contents slot wrappers move with shared scroll layout','wide tables and code blocks stay inside available area','expanded sidebar keeps native geometry','opening sidebar animates summary closed','return restores prior open summary','manual overlay returns to balanced layout','rapid sidebar reversal cancels pending unmount','explicitly closed summary stays closed on return','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
  writeFileSync('qa/browser-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 }finally{await browser.close();}

@@ -120,7 +120,17 @@ function apply(ctx) {
   }
   function Toggle({sessionId,inputActions}) {
     const [open,setOpen]=React.useState(false),[rendered,setRendered]=React.useState(false),[host,setHost]=React.useState(null);
-    const ref=React.useRef(null),layout=React.useRef(null);
+    const ref=React.useRef(null),layout=React.useRef(null),visibility=React.useRef(null);
+    if(visibility.current?.sessionId!==sessionId)visibility.current={sessionId,model:new SummaryVisibility(ctx.sidebarRight.isExpanded?.()===true)};
+    React.useEffect(()=>{
+      const model=visibility.current.model;
+      setOpen(model.open);if(!model.open)setRendered(false);
+      return watchRightSidebar(ref.current,ctx.sidebarRight,expanded=>{
+        const previous=model.open,next=model.sidebar(expanded);
+        if(previous===next)return;
+        if(next)setRendered(true);setOpen(next);
+      });
+    },[sessionId]);
     React.useEffect(()=>repository.retain(sessionId),[sessionId]);
     React.useLayoutEffect(()=>{
       if(!rendered)return;
@@ -136,7 +146,7 @@ function apply(ctx) {
       const timer=setTimeout(()=>setRendered(false),260);
       return ()=>clearTimeout(timer);
     },[open,rendered]);
-    return h(React.Fragment,null,h('button',{ref,className:'dsp-toggle',type:'button','aria-label':open?'关闭摘要面板':'打开摘要面板','aria-expanded':open,title:'摘要：输出内容和来源',onClick:()=>{if(!open)setRendered(true);setOpen(!open);}},h(Icon,{kind:'summary',size:18})),host&&ReactDOM.createPortal(h(SummaryPanel,{sessionId,inputActions,view:'summary',onNavigate:openDetails}),host));
+    return h(React.Fragment,null,h('button',{ref,className:'dsp-toggle',type:'button','aria-label':open?'关闭摘要面板':'打开摘要面板','aria-expanded':open,title:'摘要：输出内容和来源',onClick:()=>{const next=visibility.current.model.toggle();if(next)setRendered(true);setOpen(next);}},h(Icon,{kind:'summary',size:18})),host&&ReactDOM.createPortal(h(SummaryPanel,{sessionId,inputActions,view:'summary',onNavigate:openDetails}),host));
   }
   ctx.effect(()=>ctx.slots.inject('conversation.session.header.utilities',()=>ctx.slots.register({name:'conversation.session.header.utilities',id:'dsh-summary-panel-toggle',order:1000},Toggle)));
 }

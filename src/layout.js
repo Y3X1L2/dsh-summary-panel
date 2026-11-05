@@ -2,7 +2,7 @@
 export function attachSummaryLayout(session, rail, sidebarRight) {
   const scroll=session.querySelector(':scope > [data-conversation-scroll]');
   const roots=new Set();
-  let released=false, preferredWidth=0, manualWidth=null, drag=null;
+  let overlay=false, opened=false, preferredWidth=0, manualWidth=null, drag=null;
   const expanded=()=>sidebarRight.isExpanded?.()===true;
   const setLength=(name,value)=>{
     const next=`${Math.round(value*100)/100}px`;
@@ -21,7 +21,7 @@ export function attachSummaryLayout(session, rail, sidebarRight) {
     if(current?.handle.hasPointerCapture(current.pointerId))current.handle.releasePointerCapture(current.pointerId);
   };
   const release=()=>{
-    endCapture();released=true;session.dataset.dspLayoutState='overlay';session.classList.remove('dsp-content-shifted');
+    endCapture();overlay=true;manualWidth=null;session.removeAttribute('data-dsp-manual-width');session.dataset.dspLayoutState='overlay';session.classList.remove('dsp-content-shifted');
   };
   const fit=()=>{
     const column=session.clientWidth;
@@ -35,23 +35,29 @@ export function attachSummaryLayout(session, rail, sidebarRight) {
     const available=scroll.clientWidth-reserved;
     const width=manualWidth??Math.min(preferredWidth,available-64);
     setLength('--dsp-reserved',reserved);
+    setLength('--dsp-natural-width',preferredWidth);
     setLength('--dsp-content-width',width);
     setLength('--dsp-axis-offset',(column-cardLeft)/2);
     setLength('--dsp-overflow',manualWidth===null?0:Math.max(0,width+64-available));
   };
-  if(scroll&&!expanded()){
+  const naturalWidth=()=>{
     const probe=document.createElement('div');
-    probe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;height:0;width:var(--dsh-chat-content-width,680px)';
-    session.append(probe);preferredWidth=probe.offsetWidth;probe.remove();
-    markRoots(scroll);fit();if(!released)session.classList.add('dsp-content-shifted');
-  }
+    // Resolve the host width independently of our temporary content-width cap.
+    probe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;height:0;width:var(--dsh-chat-user-width,clamp(680px,calc(var(--dsh-conversation-column-width,0px) * .64),920px))';
+    session.append(probe);const width=probe.offsetWidth;probe.remove();return width;
+  };
+  if(scroll)markRoots(scroll);
   const update=()=>{
     if(expanded()){release();return;}
-    if(!released&&preferredWidth)fit();
+    if(!scroll)return;
+    if(overlay){overlay=false;manualWidth=null;session.removeAttribute('data-dsp-manual-width');markRoots(scroll);}
+    preferredWidth=naturalWidth();
+    fit();
+    if(!overlay){session.classList.add('dsp-content-shifted');session.dataset.dspLayoutState=opened?'open':'closing';}
   };
   const pointerDown=event=>{
     const handle=event.target.closest('[data-width-handle]');
-    if(event.button!==0||!handle||released||session.dataset.dspLayoutState!=='open'||!session.classList.contains('dsp-content-shifted'))return;
+    if(event.button!==0||!handle||overlay||session.dataset.dspLayoutState!=='open'||!session.classList.contains('dsp-content-shifted'))return;
     event.preventDefault();event.stopPropagation();
     const width=parseFloat(session.style.getPropertyValue('--dsp-content-width'));
     const scale=session.getBoundingClientRect().width/session.offsetWidth||1;
@@ -87,23 +93,20 @@ export function attachSummaryLayout(session, rail, sidebarRight) {
   const handlers={pointerdown:pointerDown,pointermove:pointerMove,pointerup:pointerUp,pointercancel:pointerCancel,lostpointercapture:pointerCancel};
   for(const [name,handler] of Object.entries(handlers))session.addEventListener(name,handler,true);
   const resize=new ResizeObserver(update);resize.observe(session);if(scroll)resize.observe(scroll);
-  let frame=session.parentElement;
-  while(frame&&!frame.querySelector('[data-rightbar-col]'))frame=frame.parentElement;
-  const sidebarObserver=new MutationObserver(update);
-  if(frame)sidebarObserver.observe(frame,{attributes:true,attributeFilter:['data-rightbar-collapsed','data-rightbar-fullscreen']});
+  const stopSidebar=watchRightSidebar(session,sidebarRight,update);
   const slotsObserver=new MutationObserver(records=>{
     if(records.some(record=>record.target===scroll||getComputedStyle(record.target).display==='contents'))markRoots(scroll);
   });
   if(scroll)slotsObserver.observe(scroll,{childList:true,subtree:true});
   return {
-    setOpen(open){session.dataset.dspLayoutState=open?'open':'closing';if(open)update();else endCapture();},
+    setOpen(open){opened=open;session.dataset.dspLayoutState=open?'open':'closing';if(open)update();else{endCapture();update();}session.dataset.dspRevealState=open?'open':'closing';},
     dispose(){
-      endCapture();resize.disconnect();sidebarObserver.disconnect();slotsObserver.disconnect();
+      endCapture();resize.disconnect();stopSidebar();slotsObserver.disconnect();
       for(const [name,handler] of Object.entries(handlers))session.removeEventListener(name,handler,true);
       for(const node of roots)node.removeAttribute('data-dsp-layout-root');
       session.classList.remove('dsp-content-shifted');
-      for(const name of ['--dsp-reserved','--dsp-content-width','--dsp-axis-offset','--dsp-overflow'])session.style.removeProperty(name);
-      delete session.dataset.dspLayoutState;session.removeAttribute('data-dsp-manual-width');
+      for(const name of ['--dsp-reserved','--dsp-content-width','--dsp-natural-width','--dsp-axis-offset','--dsp-overflow'])session.style.removeProperty(name);
+      delete session.dataset.dspLayoutState;delete session.dataset.dspRevealState;session.removeAttribute('data-dsp-manual-width');
     }
   };
 }

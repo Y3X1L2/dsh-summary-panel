@@ -52,8 +52,8 @@ test('summary keeps an overlay rail and applies scoped conversation layout style
  assert.ok(!/padding|margin|width|grid|flex/.test(sessionRule));
  const railRule=css.match(/\.dsp-independent-rail\{([^}]+)\}/)[1];
  assert.match(railRule,/position:absolute/);assert.ok(!/border-left/.test(railRule));
- assert.match(css,/\.dsp-content-shifted\[data-dsp-layout-state=open\]/);
- assert.match(css,/\[data-conversation-scroll\]\{padding-right:var\(--dsp-reserved\)/);
+ assert.match(css,/@property --dsp-reveal/);
+ assert.match(css,/\[data-conversation-scroll\]\{padding-right:calc\(var\(--dsp-reserved\) \* var\(--dsp-reveal\)/);
  assert.ok(!/\[data-conversation-scroll\]>\*\{[^}]*translate/.test(css));
  assert.ok(!/scale\(/.test(css));
 });
