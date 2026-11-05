@@ -228,7 +228,7 @@ try{
  // gesture can expand under the card, without shifting its left edge offscreen.
  await page.evaluate(()=>{qa.setSidebar(false);document.querySelector('#overlap-probe').remove();});
  await page.setViewportSize({width:1100,height:1000});
- await page.waitForFunction(()=>document.querySelector('[data-conversation-session]').offsetWidth===920);
+ await page.waitForFunction(()=>{const session=document.querySelector('[data-conversation-session]');return session.offsetWidth===920&&getComputedStyle(session).getPropertyValue('--dsh-conversation-column-width').trim()==='920px';});
  const narrowBefore=await bounds();
  await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
  const narrowText=await bounds(),narrowCard=await rail.locator('.dsp-card').boundingBox();
