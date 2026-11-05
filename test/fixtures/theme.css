@@ -1,0 +1,3 @@
+/* Minimal host theme tokens for the isolated browser fixture. */
+body{--dsw-alias-bg-base:#fff;--dsw-alias-bg-layer-2:#f7f7f8;--dsw-alias-label-primary:#1f2329;--dsw-alias-label-secondary:#606770;--dsw-alias-label-tertiary:#999;--dsw-alias-border-l2:#e5e5e5;--dsw-alias-interactive-bg-hover:#00000008;--dsw-alias-state-business-primary:#4d6bfe;--dsw-specific-sidebar-fill:#f7f7f8;--dsw-specific-menu:#fff}
+body[data-ds-dark-theme]{--dsw-alias-bg-base:#151517;--dsw-alias-bg-layer-2:#222225;--dsw-alias-label-primary:#f9fafb;--dsw-alias-label-secondary:#c9cdd4;--dsw-alias-label-tertiary:#858b94;--dsw-alias-border-l2:#ffffff1a;--dsw-alias-interactive-bg-hover:#ffffff0d;--dsw-specific-sidebar-fill:#19191c;--dsw-specific-menu:#28282c}

@@ -1,0 +1,58 @@
+{
+  "name": "dsh-summary-panel",
+  "version": "0.4.0",
+  "description": "会话摘要：输出文件、网页搜索、附件和工具来源",
+  "type": "module",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "dsh": "0.2.1-rc.5 || 0.2.2-rc.1",
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-commands"
+      ],
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "pack": "node scripts/pack.mjs",
+    "test:browser": "node scripts/browser-acceptance.mjs"
+  },
+  "devDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "playwright": "1.56.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Y3X1L2/dsh-summary-panel.git"
+  },
+  "homepage": "https://github.com/Y3X1L2/dsh-summary-panel#readme",
+  "bugs": {
+    "url": "https://github.com/Y3X1L2/dsh-summary-panel/issues"
+  }
+}
