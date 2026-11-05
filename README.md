@@ -14,18 +14,18 @@
 - **来源**：整理附件、网页搜索、访问页面和 MCP 工具提供方。
 - **右侧详情**：“查看全部”在右侧边栏打开完整列表，支持搜索；摘要卡片继续保留在会话中。
 - **创建与添加**：通过“＋”选择创建文档、表格、演示文稿或文件；来源区域支持添加附件。
-- **浮动卡片**：从会话右上角打开，覆盖在正文上方；紧凑布局、日夜主题和开合动画。
+- **浮动卡片**：从会话右上角水平滑入，收起时向右滑出；通常自动为正文与输入框让出空间，手动调整对话宽度或展开右侧边栏后可自由覆盖。
 - **即时展开**：会话打开时预加载，摘要与详情共享实时数据；收起后持续更新，再次展开直接显示缓存。
 
 ## 安装
 
 支持 DeepSeek Harness Desktop **0.2.1-rc.5** 和 **0.2.2-rc.1**。
 
-从 [Releases](https://github.com/Y3X1L2/dsh-summary-panel/releases/latest) 下载 `dsh-summary-panel-0.4.0.tgz`，在下载目录运行：
+从 [Releases](https://github.com/Y3X1L2/dsh-summary-panel/releases/latest) 下载 `dsh-summary-panel-0.5.0.tgz`，在下载目录运行：
 
 ```powershell
 $dshCli = Join-Path $env:LOCALAPPDATA 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd'
-$package = (Resolve-Path '.\dsh-summary-panel-0.4.0.tgz').Path
+$package = (Resolve-Path '.\dsh-summary-panel-0.5.0.tgz').Path
 & $dshCli plugin --profile desktop add $package
 ```
 
@@ -50,7 +50,7 @@ pnpm test
 pnpm run pack
 ```
 
-生成的安装包位于 `dist/dsh-summary-panel-0.4.0.tgz`。
+生成的安装包位于 `dist/dsh-summary-panel-0.5.0.tgz`。
 
 浏览器交互验收：
 
@@ -66,6 +66,7 @@ pnpm test:browser
 | 路径 | 内容 |
 | --- | --- |
 | `src/aggregate.js` | 事件聚合、历史分页、实时订阅与会话缓存 |
+| `src/layout.js` | 展开让位、手动宽度与侧边栏布局交接 |
 | `src/client.js` | 摘要卡片、右侧详情页与 DSH 交互 |
 | `src/panel.css` | 卡片样式、主题与动画 |
 | `lib/` | DSH 加载的构建产物 |

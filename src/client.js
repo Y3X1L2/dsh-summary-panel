@@ -120,20 +120,20 @@ function apply(ctx) {
   }
   function Toggle({sessionId,inputActions}) {
     const [open,setOpen]=React.useState(false),[rendered,setRendered]=React.useState(false),[host,setHost]=React.useState(null);
-    const ref=React.useRef(null);
+    const ref=React.useRef(null),layout=React.useRef(null);
     React.useEffect(()=>repository.retain(sessionId),[sessionId]);
     React.useLayoutEffect(()=>{
       if(!rendered)return;
       const session=[...document.querySelectorAll('[data-conversation-session]')].find(node=>node.dataset.conversationSession===sessionId && node.getClientRects().length>0);
       if(!session)return;
       const seat=document.createElement('aside');seat.className='dsp-independent-rail';seat.dataset.state='open';seat.setAttribute('aria-label','会话摘要');
-      session.classList.add('dsp-session-open');session.append(seat);setHost(seat);
-      return ()=>{setHost(null);seat.remove();session.classList.remove('dsp-session-open');};
+      session.classList.add('dsp-session-open');session.append(seat);layout.current=attachSummaryLayout(session,seat,ctx.sidebarRight);setHost(seat);
+      return ()=>{layout.current?.dispose();layout.current=null;setHost(null);seat.remove();session.classList.remove('dsp-session-open');};
     },[rendered,sessionId]);
-    React.useLayoutEffect(()=>{if(host)host.dataset.state=open?'open':'closing';},[host,open]);
+    React.useLayoutEffect(()=>{if(host){host.dataset.state=open?'open':'closing';layout.current?.setOpen(open);}},[host,open]);
     React.useEffect(()=>{
       if(open||!rendered)return;
-      const timer=setTimeout(()=>setRendered(false),180);
+      const timer=setTimeout(()=>setRendered(false),260);
       return ()=>clearTimeout(timer);
     },[open,rendered]);
     return h(React.Fragment,null,h('button',{ref,className:'dsp-toggle',type:'button','aria-label':open?'关闭摘要面板':'打开摘要面板','aria-expanded':open,title:'摘要：输出内容和来源',onClick:()=>{if(!open)setRendered(true);setOpen(!open);}},h(Icon,{kind:'summary',size:18})),host&&ReactDOM.createPortal(h(SummaryPanel,{sessionId,inputActions,view:'summary',onNavigate:openDetails}),host));

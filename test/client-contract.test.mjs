@@ -46,10 +46,13 @@ test('detail tab receives the full source view and search surface',()=>{
  assert.ok(walk(rendered,n=>n.type==='input'&&n.props['aria-label']==='搜索摘要条目'));
  assert.ok(!walk(rendered,n=>n.props?.className==='dsp-rail-heading'));
 });
-test('opening the card reserves no space and adds no border between it and the transcript',()=>{
+test('summary keeps an overlay rail and applies scoped conversation layout styles',()=>{
  const css=readFileSync(new URL('../src/panel.css',import.meta.url),'utf8');
  const sessionRule=css.match(/\.dsp-session-open\{([^}]+)\}/)[1];
  assert.ok(!/padding|margin|width|grid|flex/.test(sessionRule));
  const railRule=css.match(/\.dsp-independent-rail\{([^}]+)\}/)[1];
  assert.match(railRule,/position:absolute/);assert.ok(!/border-left/.test(railRule));
+ assert.match(css,/\.dsp-content-shifted:not\(\[data-dsp-manual-width\]\)/);
+ assert.match(css,/\[data-conversation-scroll\]>\*/);
+ assert.ok(!/scale\(/.test(css));
 });
