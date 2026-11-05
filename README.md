@@ -4,11 +4,13 @@
 
 ## 预览
 
-![对话与摘要布局](docs/images/layout-light.png)
+**日间模式**
 
-| 日间 | 夜间 |
-| --- | --- |
-| ![日间摘要卡片](docs/images/light.png) | ![夜间摘要卡片](docs/images/dark.png) |
+![日间模式](docs/images/preview-light.png)
+
+**夜间模式**
+
+![夜间模式与附件预览](docs/images/preview-dark.png)
 
 ## 功能
 
