@@ -4,6 +4,8 @@
 
 ## 预览
 
+![对话与摘要布局](docs/images/layout-light.png)
+
 | 日间 | 夜间 |
 | --- | --- |
 | ![日间摘要卡片](docs/images/light.png) | ![夜间摘要卡片](docs/images/dark.png) |
@@ -14,18 +16,26 @@
 - **来源**：整理附件、网页搜索、访问页面和 MCP 工具提供方。
 - **右侧详情**：“查看全部”在右侧边栏打开完整列表，支持搜索；摘要卡片继续保留在会话中。
 - **创建与添加**：通过“＋”选择创建文档、表格、演示文稿或文件；来源区域支持添加附件。
-- **浮动卡片**：从会话右上角水平滑入，收起时向右滑出；通常自动为正文与输入框让出空间，手动调整对话宽度或展开右侧边栏后可自由覆盖。
+- **浮动卡片**：从会话右上角水平滑入，收起时向右滑出；通常自动为正文与输入框让出空间，并平衡正文两侧留白；手动拖动从当前宽度和位置开始，展开右侧边栏后可自由覆盖。
 - **即时展开**：会话打开时预加载，摘要与详情共享实时数据；收起后持续更新，再次展开直接显示缓存。
+
+## 使用
+
+1. 点击会话右上角的列表图标，展开或收起摘要。
+2. 展开后，正文和输入框会为卡片让出空间，正文两侧保持均衡留白。
+3. 拖动正文两侧的宽度手柄，从当前宽度继续调整；调宽后的内容可以延伸到卡片下方。
+4. 点击输出文件打开 DSH 预览；点击“查看全部”在右侧边栏浏览和搜索完整列表。
+5. 输出区域的“＋”可添加文档、表格、演示文稿或文件创建要求；补充要求后发送。来源区域的“＋”打开附件选择器。
 
 ## 安装
 
 支持 DeepSeek Harness Desktop **0.2.1-rc.5** 和 **0.2.2-rc.1**。
 
-从 [Releases](https://github.com/Y3X1L2/dsh-summary-panel/releases/latest) 下载 `dsh-summary-panel-0.5.0.tgz`，在下载目录运行：
+从 [Releases](https://github.com/Y3X1L2/dsh-summary-panel/releases/latest) 下载 `dsh-summary-panel-0.5.1.tgz`，在下载目录运行：
 
 ```powershell
 $dshCli = Join-Path $env:LOCALAPPDATA 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd'
-$package = (Resolve-Path '.\dsh-summary-panel-0.5.0.tgz').Path
+$package = (Resolve-Path '.\dsh-summary-panel-0.5.1.tgz').Path
 & $dshCli plugin --profile desktop add $package
 ```
 
@@ -50,7 +60,7 @@ pnpm test
 pnpm run pack
 ```
 
-生成的安装包位于 `dist/dsh-summary-panel-0.5.0.tgz`。
+生成的安装包位于 `dist/dsh-summary-panel-0.5.1.tgz`。
 
 浏览器交互验收：
 
@@ -59,7 +69,7 @@ pnpm exec playwright install chromium
 pnpm test:browser
 ```
 
-验收覆盖主题、浮层遮挡、开合动画、侧边栏导航、搜索、输入框交互及重复展开时的缓存复用。测试报告和截图生成在 `qa/`。
+验收覆盖留白平衡、左右手柄连续拖动、主题、浮层遮挡、开合动画、侧边栏导航、搜索、输入框交互及重复展开时的缓存复用。测试报告和截图生成在 `qa/`。
 
 ## 项目结构
 

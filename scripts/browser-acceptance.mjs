@@ -8,13 +8,32 @@ const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleF
 const errors=[];page.on('pageerror',error=>errors.push(error.message));
 mkdirSync('qa',{recursive:true});
 try{
+ await page.route('http://dsh-summary.test/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html>'}));
+ await page.goto('http://dsh-summary.test/');
  await page.setContent(`<!doctype html><html lang="zh"><meta charset="utf-8"><style>${readFileSync(new URL('../test/fixtures/theme.css',import.meta.url),'utf8')}
- body{margin:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:Arial,sans-serif}#fixture{display:grid;grid-template-columns:180px minmax(0,1fr) 380px;height:100vh}#fixture[data-rightbar-collapsed]{grid-template-columns:180px minmax(0,1fr) 0}nav{background:var(--dsw-specific-sidebar-fill);padding:20px}main{min-width:0;display:flex;flex-direction:column}header{display:flex;align-items:center;gap:10px;padding:14px 18px;height:40px}#header-actions{margin-left:auto}[data-conversation-session]{--dsh-chat-content-width:var(--dsh-chat-user-width,clamp(680px,calc(var(--dsh-conversation-column-width,0px) * .64),920px));flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;position:relative}[data-conversation-scroll]{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}.transcript{flex:1 0 auto}#text{width:var(--dsh-chat-content-width);margin:40px auto;line-height:1.8}.composer-seat{padding:12px 16px;flex:none}textarea{display:block;box-sizing:border-box;width:calc(var(--dsh-chat-content-width) + 32px);max-width:100%;height:80px;margin:0 auto;resize:none}#right{padding:12px;background:var(--dsw-alias-bg-base);overflow:auto}#fixture[data-rightbar-collapsed] #right{display:none}[data-width-handle]{position:absolute;top:0;bottom:0;width:10px;cursor:col-resize;z-index:1}[data-width-handle=right]{left:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}[data-width-handle=left]{right:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}button{font:inherit}
- </style><div id="fixture" data-rightbar-collapsed><nav>DeepSeek Harness<br>验收会话</nav><main><header>摘要面板验收 <div id="header-actions"></div></header><div data-conversation-session="qa-session"><div data-conversation-scroll><div class="transcript"><div id="text"><h2>正文排版检查</h2><p>打开摘要时，对话正文和输入框为右侧卡片让出空间。手动调整对话宽度或展开右侧边栏后，可以自由调整布局。完整列表和文件预览使用右侧边栏。</p><p>浏览器交互验收示例。</p></div></div><div class="composer-seat"><textarea id="composer" aria-label="消息输入框">保留原有草稿</textarea></div></div><div data-width-handle="left"></div><div data-width-handle="right"></div></div></main><aside id="right" data-rightbar-col aria-label="右侧边栏">文件 / 浏览器</aside></div>`);
+ body{margin:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif}#fixture{display:grid;grid-template-columns:180px minmax(0,1fr) 380px;height:100vh}#fixture[data-rightbar-collapsed]{grid-template-columns:180px minmax(0,1fr) 0}nav{background:var(--dsw-specific-sidebar-fill);padding:20px}main{min-width:0;display:flex;flex-direction:column}header{display:flex;align-items:center;gap:10px;padding:14px 18px;height:40px}#header-actions{margin-left:auto}[data-conversation-session]{--dsh-chat-content-width:var(--dsh-chat-user-width,clamp(680px,calc(var(--dsh-conversation-column-width,0px) * .64),920px));flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;position:relative}[data-conversation-scroll]{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;scrollbar-gutter:stable;margin-right:2px}.slot{display:contents}.transcript{flex:1 0 auto;display:flex;flex-direction:column;min-width:0}.chat-frame{container-type:inline-size;flex:none}.chat-scroll{padding:16px 32px;container-type:inline-size;overflow:clip visible}#text{width:100%;max-width:var(--dsh-chat-content-width);margin:24px auto;line-height:1.8}.md-table-wide{width:100cqw;margin-left:calc((100% - 100cqw) / 2);overflow:auto}.md-table-wide table{width:100%;border-collapse:collapse}.md-table-wide td{padding:12px;border-block:1px solid #8883}.code-block{overflow:auto;max-width:100%;background:#8881;padding:12px;box-sizing:border-box}.composer-seat{padding:12px 16px;flex:none}textarea{display:block;box-sizing:border-box;width:calc(var(--dsh-chat-content-width) + 32px);max-width:100%;height:80px;margin:0 auto;resize:none}#right{padding:12px;background:var(--dsw-alias-bg-base);overflow:auto}#fixture[data-rightbar-collapsed] #right{display:none}[data-width-handle]{position:absolute;top:0;bottom:0;width:10px;cursor:col-resize;z-index:1}[data-width-handle=right]{left:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}[data-width-handle=left]{right:calc(50% + var(--dsh-chat-content-width) / 2 + 24px)}button{font:inherit}
+ </style><div id="fixture" data-rightbar-collapsed><nav>DeepSeek Harness<br>验收会话</nav><main><header>摘要面板验收 <div id="header-actions"></div></header><div data-conversation-session="qa-session"><div data-conversation-scroll><div class="slot" data-slot="conversation.session"><div class="transcript"><div class="slot" data-slot="conversation.chat"><div class="chat-frame"><div class="chat-scroll"><div id="text" data-chat-flow><h2>正文排版检查</h2><p>打开摘要时，对话正文和输入框为右侧卡片让出空间。手动调整对话宽度或展开右侧边栏后，可以自由调整布局。完整列表和文件预览使用右侧边栏。</p><div class="md-table-wide"><table><tbody><tr><td>宽表格</td><td>正文与输入框应同时为摘要卡片让位</td></tr><tr><td>来源</td><td>表格可在自己的容器内横向滚动</td></tr></tbody></table></div><pre class="code-block">const output = await createDocument();\nawait present(output);</pre><p>浏览器交互验收示例。</p></div></div></div></div></div></div><div class="composer-seat"><textarea id="composer" aria-label="消息输入框">保留原有草稿</textarea></div></div><div data-width-handle="left"></div><div data-width-handle="right"></div></div></main><aside id="right" data-rightbar-col aria-label="右侧边栏">文件 / 浏览器</aside></div>`);
  await page.evaluate(()=>{
   const session=document.querySelector('[data-conversation-session]');
   const publish=()=>session.parentElement.style.setProperty('--dsh-conversation-column-width',`${session.offsetWidth}px`);
   new ResizeObserver(publish).observe(session);publish();
+  // A native-like handler sits behind the plugin's capture handler. A real
+  // pointer drag must either belong to the plugin or reach the native control.
+  for(const handle of session.querySelectorAll('[data-width-handle]')){
+   let drag;
+   handle.addEventListener('pointerdown',event=>{
+    qa.nativeDragStarts=(qa.nativeDragStarts||0)+1;
+    const pref=Number(localStorage.getItem('dsh.conversation.contentWidth'));
+    drag={x:event.clientX,width:pref>0?Math.max(640,pref):Math.max(680,Math.min(session.offsetWidth*.64,920))};
+    handle.setPointerCapture(event.pointerId);
+   });
+   handle.addEventListener('pointermove',event=>{
+    if(!drag)return;
+    const dx=(event.clientX-drag.x)*(handle.dataset.widthHandle==='left'?-1:1);
+    session.parentElement.style.setProperty('--dsh-chat-user-width',`${Math.max(640,Math.min(drag.width+2*dx,session.clientWidth-176))}px`);
+   });
+   handle.addEventListener('pointerup',()=>{drag=null;});
+  }
  });
  await page.addScriptTag({content:readFileSync(require.resolve('react/umd/react.development.js'.replace('/umd/react.development.js','') ).replace(/index\.js$/,'umd/react.development.js'),'utf8')});
  await page.addScriptTag({content:readFileSync(require.resolve('react-dom').replace(/index\.js$/,'umd/react-dom.development.js'),'utf8')});
@@ -54,7 +73,7 @@ try{
  await page.getByRole('button',{name:'查看全部 8 个文件',exact:true}).waitFor();
  await settle();
  const shifted=await bounds();
- assert.equal(shifted.width,before.width,'Wide conversations keep their text width');
+ assert.ok(Math.abs(shifted.width-before.width)<=1,'Wide conversations keep their text width');
  assert.ok(shifted.x<before.x,'Opening summary shifts the conversation left');
  const rail=page.getByRole('complementary',{name:'会话摘要'});
  assert.equal(await rail.locator('.dsp-rail-heading').count(),0,'No summary title or close chrome above card');
@@ -63,14 +82,54 @@ try{
  assert.equal(await rail.evaluate(el=>getComputedStyle(el).overflowX),'hidden');
  const cardBounds=await rail.locator('.dsp-card').boundingBox(),sceneBounds=await page.locator('[data-conversation-session]').boundingBox();
  assert.ok(shifted.x+shifted.width<=cardBounds.x-8,'Text must stay left of the summary');
+ const wideTable=await page.locator('.md-table-wide').boundingBox();
+ assert.ok(wideTable.x>=sceneBounds.x&&wideTable.x+wideTable.width<=cardBounds.x,'Wide table must also stay left of card');
+ const codeBlock=await page.locator('.code-block').boundingBox();
+ assert.ok(codeBlock.x>=sceneBounds.x&&codeBlock.x+codeBlock.width<=cardBounds.x,'Code block must stay inside reserved layout');
+ const gapLeft=shifted.x-sceneBounds.x,gapRight=cardBounds.x-shifted.x-shifted.width;
+ assert.ok(Math.abs(gapLeft-gapRight)<=2,`Normal gaps must balance: ${gapLeft} / ${gapRight}`);
  const composer=await page.locator('#composer').boundingBox();
  assert.ok(composer.x+composer.width<=cardBounds.x,'Composer must also have room');
+ if(process.env.UPDATE_DEMO){
+  mkdirSync('docs/images',{recursive:true});
+  const original=await page.locator('#text').innerHTML();
+  const originalHeader=await page.locator('header').evaluate(el=>{const value=el.firstChild.textContent;el.firstChild.textContent='会话摘要';return value;});
+  const originalDraft=await page.locator('#composer').inputValue();
+  await page.locator('#composer').fill('继续完善项目文档…');
+  const previewStyle=await page.addStyleTag({content:'textarea{border:0;border-radius:18px;padding:14px;font:inherit;background:#f5f5f5;color:#777}'});
+  await page.setViewportSize({width:1600,height:640});await settle();
+  await page.locator('#text h2').evaluate(el=>el.textContent='项目交付记录');
+  await page.locator('#text > p').first().evaluate(el=>el.textContent='文档与代码已整理完成。通过右上角摘要卡片，可以快速打开交付文件、查看来源和检索完整列表。');
+  await page.locator('#text > p').last().evaluate(el=>el.textContent='拖动对话两侧的手柄，可从当前宽度继续调整阅读区域。');
+  await page.locator('.md-table-wide table').evaluate(el=>el.innerHTML='<tbody><tr><td>文档</td><td>整理项目需求、实现方案与使用说明</td></tr><tr><td>代码</td><td>生成可运行的代码与配置文件</td></tr></tbody>');
+  await page.mouse.move(0,0);
+  await page.locator('main').screenshot({path:'docs/images/layout-light.png'});
+  await previewStyle.evaluate(el=>el.remove());
+  await page.locator('header').evaluate((el,value)=>el.firstChild.textContent=value,originalHeader);
+  await page.locator('#composer').fill(originalDraft);
+  await page.locator('#text').evaluate((el,original)=>el.innerHTML=original,original);
+  await page.setViewportSize({width:1600,height:1000});await settle();
+ }
  // Animation may already be finished, so inspect the authored keyframes too.
  const animationCss=await page.locator('style[data-plugin="dsh-summary-panel"]').textContent();
  assert.match(animationCss,/@keyframes dsp-card-enter\{from\{transform:translateX\(100%\)\}/);
  assert.match(animationCss,/@keyframes dsp-card-exit\{from\{transform:translateX\(0\)\}to\{transform:translateX\(100%\)\}/);
  assert.ok(cardBounds.height<=340,`Compact summary with four file previews and web sources is too tall: ${cardBounds.height}`);
  assert.ok(cardBounds.y-sceneBounds.y<=12,'Card starts near the top of the conversation scene');
+ // A wide conversation retains the same center throughout the first drag.
+ const wideHandle=await page.locator('[data-width-handle=right]').boundingBox();
+ await page.mouse.move(wideHandle.x+5,500);await page.mouse.down();
+ assert.deepEqual(await bounds(),shifted,'Wide pointer-down must not recenter');
+ await page.mouse.up();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('dsh.conversation.contentWidth')),null,'A click alone does not change the saved width');
+ await page.mouse.down();await page.mouse.move(wideHandle.x+17,500,{steps:3});await page.mouse.up();
+ const wideDragged=await bounds();
+ assert.ok(Math.abs(wideDragged.width-shifted.width-24)<=1);
+ assert.ok(Math.abs((wideDragged.x+wideDragged.width/2)-(shifted.x+shifted.width/2))<=1,'Wide drag keeps its existing center axis');
+ await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
+ await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
+ await page.evaluate(()=>{localStorage.removeItem('dsh.conversation.contentWidth');document.querySelector('main').style.removeProperty('--dsh-chat-user-width');});
+ await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();await settle();
  // Resizing the application while the card is open should keep normal text in view.
  await page.setViewportSize({width:1100,height:1000});
  await page.waitForFunction(()=>document.querySelector('#text').getBoundingClientRect().width<680);await settle();
@@ -176,17 +235,41 @@ try{
  assert.ok(narrowText.width<narrowBefore.width,'Narrow columns cap the initial text width');
  assert.ok(narrowText.x+narrowText.width<=narrowCard.x-8,'Narrow normal layout avoids overlap');
  assert.ok(narrowText.x>=180+24,'Narrow layout preserves a left margin');
+ assert.ok(Math.abs((narrowText.x-180)-(narrowCard.x-narrowText.x-narrowText.width))<=2,'Narrow margins must balance too');
  assert.ok(await rail.evaluate(el=>el.scrollWidth<=el.clientWidth),'No horizontal scrollbar during slide');
- await page.locator('[data-width-handle=right]').dispatchEvent('pointerdown',{button:0});
- await page.evaluate(()=>document.querySelector('main').style.setProperty('--dsh-chat-user-width','744px'));
- await page.waitForFunction(()=>document.querySelector('#text').getBoundingClientRect().width===744);await settle();
+ // Pressing the right handle must not release the summary layout or recenter.
+ const rightHandle=await page.locator('[data-width-handle=right]').boundingBox();
+ const dragY=Math.max(narrowCard.y+narrowCard.height+30,500);
+ await page.mouse.move(rightHandle.x+5,dragY);await page.mouse.down();
+ assert.deepEqual(await bounds(),narrowText,'Pointer-down must preserve the displayed position and width');
+ await page.mouse.move(rightHandle.x+15,dragY,{steps:2});
+ const firstStep=await bounds();
+ assert.ok(Math.abs(firstStep.width-narrowText.width-20)<=1,'First movement starts from displayed width');
+ assert.ok(Math.abs(firstStep.x-narrowText.x)<=11,'No initial recentering jump');
+ await page.mouse.move(rightHandle.x+5+(744-narrowText.width)/2,dragY,{steps:8});
+ await page.mouse.up();await settle();
  const manual=await bounds();
- assert.equal(manual.width,744,'Native manual width remains authoritative');
+ assert.equal(manual.width,744,'Dragging can expand to the native maximum');
  assert.ok(manual.x+manual.width>narrowCard.x,'Manual expansion may extend underneath the summary');
  assert.ok(manual.x>=180+24,'Manual expansion never shifts the left edge offscreen');
+ assert.equal(await page.evaluate(()=>qa.nativeDragStarts||0),0,'Native control must not also start a competing drag');
+ assert.equal(Number(await page.evaluate(()=>localStorage.getItem('dsh.conversation.contentWidth'))),744);
+ // The other handle must continue from the existing manual width, too.
+ const leftHandle=await page.locator('[data-width-handle=left]').boundingBox();
+ await page.mouse.move(leftHandle.x+5,dragY);await page.mouse.down();
+ assert.deepEqual(await bounds(),manual,'Second drag must start from the current position');
+ await page.mouse.move(leftHandle.x+25,dragY,{steps:4});await page.mouse.up();
+ assert.equal((await bounds()).width,704,'Left-handle drag shrinks from the previous manual width');
+ await page.evaluate(()=>document.addEventListener('pointerdown',e=>qa.activePointerId=e.pointerId,{capture:true,once:true}));
+ const cancelHandle=await page.locator('[data-width-handle=right]').boundingBox();
+ await page.mouse.move(cancelHandle.x+5,dragY);await page.mouse.down();
+ await page.mouse.move(cancelHandle.x-5,dragY,{steps:2});
+ await page.evaluate(()=>document.querySelector('[data-width-handle=right]').releasePointerCapture(qa.activePointerId));
+ await page.mouse.move(cancelHandle.x-6,dragY);await page.mouse.up();
+ assert.equal((await bounds()).width,704,'Losing pointer capture cancels to the starting width');
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
- await page.evaluate(()=>document.querySelector('main').style.removeProperty('--dsh-chat-user-width'));
+ await page.evaluate(()=>{document.querySelector('main').style.removeProperty('--dsh-chat-user-width');localStorage.removeItem('dsh.conversation.contentWidth');});
  assert.deepEqual(await bounds(),narrowBefore,'Closing restores native conversation geometry');
  assert.equal(await page.locator('[data-dsp-manual-width]').count(),0,'Manual state is cleaned up');
  // Rapid reversal must cancel the pending unmount and leave one working card.
@@ -201,7 +284,12 @@ try{
  assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).animationDuration),'0.001s');
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
+ const nativeHandle=await page.locator('[data-width-handle=right]').boundingBox();
+ await page.mouse.move(nativeHandle.x+5,500);await page.mouse.down();
+ await page.mouse.move(nativeHandle.x+15,500,{steps:2});await page.mouse.up();
+ assert.equal(await page.evaluate(()=>qa.nativeDragStarts),1,'After closing, native width controls work normally');
+ assert.equal(await page.locator('[data-dsp-layout-root]').count(),0,'Layout markers are removed on close');
  assert.deepEqual(errors,[]);
- const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','expanded sidebar keeps native geometry','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
+ const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','wide and narrow margins balance within two pixels','real pointer-down does not recenter text','dragging begins at displayed width','both handles continue from current manual width','manual preference persists without competing native drag','wide drag preserves its previous center axis','lost capture cancels cleanly','native width controls resume after closing','display-contents slot wrappers move with shared scroll layout','wide tables and code blocks stay inside available area','expanded sidebar keeps native geometry','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
  writeFileSync('qa/browser-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 }finally{await browser.close();}

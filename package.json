@@ -1,6 +1,6 @@
 {
   "name": "dsh-summary-panel",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "会话摘要：输出文件、网页搜索、附件和工具来源",
   "type": "module",
   "license": "MIT",
