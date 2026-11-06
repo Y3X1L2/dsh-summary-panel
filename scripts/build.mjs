@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 const root = new URL('../', import.meta.url);
 const source = async path => (await readFile(new URL(path,root),'utf8')).replace(/\r\n/g,'\n');
-const core = (await source('src/aggregate.js') + '\n' + await source('src/layout.js') + '\n' + await source('src/sidebar.js')).replace(/^export /gm,'');
+const core = (await source('src/aggregate.js') + '\n' + await source('src/layout.js') + '\n' + await source('src/sidebar.js') + '\n' + await source('src/motion.js')).replace(/^export /gm,'');
 const ui = "const ReactDOM=require('react-dom');\n" + await source('src/client.js');
 const css = await source('src/panel.css');
 await mkdir(new URL('lib/',root),{recursive:true});

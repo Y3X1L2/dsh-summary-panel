@@ -1,6 +1,7 @@
 import {createRequire} from 'node:module';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import assert from 'node:assert/strict';
+import {profileMotion} from './profile-motion.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require('playwright');
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})});
@@ -51,6 +52,9 @@ try{
    roots.right.render(React.createElement(entry.component,{sessionId:'qa-session',inputActions:inputs}));
   };
   window.qa={registrations,types,expanded:false,setSidebar(open){this.expanded=open;document.querySelector('#fixture').toggleAttribute('data-rightbar-collapsed',!open);},opened:[],resources:[],sourcePicks:0,followCalls:0,liveSubscribers:new Set(),emit(event){events.push(event);for(const listener of this.liveSubscribers)listener(event);}};
+  qa.motionTimings=[];
+  const animate=Element.prototype.animate;
+  Element.prototype.animate=function(frames,options){qa.motionTimings.push({panel:this.classList.contains('dsp-panel'),duration:options.duration,to:frames.at(-1).transform||frames.at(-1).translate});return animate.call(this,frames,options);};
   const ctx={effect:fn=>fn(),on:()=>()=>{},slots:{inject:(name,fn)=>fn(),register:(spec,component)=>{registrations.push({spec,component});return()=>{};}},sidebarRightTabs:{register:spec=>{types.push(spec);return()=>{};}},sidebarRight:{isExpanded:()=>qa.expanded,openTab:kind=>{qa.opened.push(kind);renderDetail(kind);},openResource:address=>{qa.setSidebar(true);qa.resources.push(address);roots.right.render(React.createElement('div',{'data-preview':address},'文件预览：'+address));}},commandUi:{dispatch:()=>{qa.sourcePicks++;return 'handled';}},remote:{session:{async *follow(req,signal){
    qa.followCalls++;let wake;const queue=[];const listener=event=>{queue.push(event);wake?.();};qa.liveSubscribers.add(listener);
    try{yield {type:'snapshot',header:{cwd:'C:/qa'},cursor:events.at(-1).seq,hasMore:false,records:events.map(event=>({type:'event',event}))};
@@ -63,37 +67,42 @@ try{
    roots.header.render(React.createElement(Toggle,{sessionId:'qa-session',inputActions:inputs}));
   }};
  });
- await page.addScriptTag({content:readFileSync('lib/client.js','utf8')});
+ let bundle=readFileSync(process.env.PROFILE_BUNDLE||'lib/client.js','utf8');
+ if(process.env.PROFILE_MOTION){
+  await page.evaluate(()=>window.__motionStats={updates:0,fits:0,probes:0});
+  bundle=bundle.replace('const update=()=>{','const update=()=>{window.__motionStats.updates++;').replace('const fit=()=>{','const fit=()=>{window.__motionStats.fits++;').replace('const naturalWidth=()=>{','const naturalWidth=()=>{window.__motionStats.probes++;');
+ }
+ await page.addScriptTag({content:bundle});
  await page.waitForFunction(()=>qa.followCalls===1);
  assert.equal(await page.locator('.dsp-independent-rail').count(),0,'Header preloads before the card opens');
+ if(process.env.PROFILE_MOTION){
+  await profileMotion(page,process.env.PROFILE_MOTION);
+ }else{
  const bounds=()=>page.locator('#text').boundingBox();
  const settle=()=>page.evaluate(async()=>{await Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{})));});
  const assertSynchronizedMotion=async()=>{
-  const samples=await page.evaluate(()=>{
-   const session=document.querySelector('[data-conversation-session]');
-   const scroll=session.querySelector('[data-conversation-scroll]');
-   const panel=session.querySelector('.dsp-independent-rail>.dsp-panel');
-   getComputedStyle(session).getPropertyValue('--dsp-reveal');
-   const animation=session.getAnimations().find(a=>a.transitionProperty==='--dsp-reveal');
-   if(!animation)throw Error('Missing shared reveal transition');
-   animation.pause();
+  const result=await page.evaluate(()=>{
+   const session=document.querySelector('[data-conversation-session]'),panel=session.querySelector('.dsp-independent-rail>.dsp-panel');
+   const all=session.getAnimations({subtree:true}),card=all.find(a=>a.effect.target===panel);
+   if(!card)throw Error('Missing compositor motion');
+   const roots=all.filter(a=>a.effect.target.hasAttribute('data-dsp-layout-root'));
+   const starts=[card,...roots].map(a=>a.startTime);
+   for(const a of [card,...roots])a.pause();
+   const frames=card.effect.getKeyframes(),from=new DOMMatrix(frames[0].transform).m41,to=new DOMMatrix(frames.at(-1).transform).m41;
    const samples=[];
    for(const time of [0,60,120,180,240]){
-    animation.currentTime=time;
-    const owner=getComputedStyle(session),style=getComputedStyle(panel);
-    const progress=Number(owner.getPropertyValue('--dsp-reveal'));
-    const reserved=parseFloat(owner.getPropertyValue('--dsp-reserved'));
-    samples.push({progress,padding:parseFloat(getComputedStyle(scroll).paddingRight),reserved,translation:new DOMMatrix(style.transform).m41,width:panel.offsetWidth,textX:session.querySelector('[data-chat-flow]').getBoundingClientRect().x});
+    for(const a of [card,...roots])a.currentTime=time;
+    samples.push({progress:card.effect.getComputedTiming().progress,translation:new DOMMatrix(getComputedStyle(panel).transform).m41,textX:session.querySelector('[data-chat-flow]').getBoundingClientRect().x,padding:parseFloat(getComputedStyle(session.querySelector('[data-conversation-scroll]')).paddingRight)});
    }
-   animation.currentTime=0;animation.play();return samples;
+   for(const a of [card,...roots]){a.currentTime=0;a.play();}
+   return {starts,from,to,samples};
   });
-  assert.ok(samples.some(s=>s.progress>0.1&&s.progress<0.99),'Sample intermediate motion frames');
-  const first=samples[0],last=samples.at(-1);
-  for(const sample of samples){
-   const fraction=(sample.progress-first.progress)/(last.progress-first.progress);
-   assert.ok(Math.abs(sample.textX-(first.textX+(last.textX-first.textX)*fraction))<0.1,'Visible text moves with the same normalized progress');
-   assert.ok(Math.abs(sample.padding-sample.reserved*sample.progress)<0.1,'Transcript uses the shared progress on every frame');
-   assert.ok(Math.abs(sample.translation-sample.width*(1-sample.progress))<0.1,'Card uses exactly the same progress on every frame');
+  assert.ok(result.starts.every(t=>Math.abs(t-result.starts[0])<.1),'Card and transcript have exactly the same timeline start');
+  const first=result.samples[0],last=result.samples.at(-1);
+  for(const sample of result.samples){
+   assert.ok(Math.abs(sample.translation-(result.from+(result.to-result.from)*sample.progress))<.1,'Card uses the shared progress');
+   assert.ok(Math.abs(sample.textX-(first.textX+(last.textX-first.textX)*sample.progress))<.1,'Visible text moves with the same progress');
+   assert.ok(Math.abs(sample.padding-first.padding)<.1,'No per-frame transcript padding reflow');
   }
  };
  const before=await bounds();
@@ -107,7 +116,7 @@ try{
  const rail=page.getByRole('complementary',{name:'会话摘要'});
  assert.equal(await rail.locator('.dsp-rail-heading').count(),0,'No summary title or close chrome above card');
  assert.equal(await rail.locator('.dsp-panel').evaluate(el=>getComputedStyle(el).fontSize),'13px');
- assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal');
+ assert.ok(await page.evaluate(()=>qa.motionTimings.some(m=>m.panel&&m.duration===240)));
  assert.equal(await rail.evaluate(el=>getComputedStyle(el).overflowX),'hidden');
  const cardBounds=await rail.locator('.dsp-card').boundingBox(),sceneBounds=await page.locator('[data-conversation-session]').boundingBox();
  assert.ok(shifted.x+shifted.width<=cardBounds.x-8,'Text must stay left of the summary');
@@ -141,8 +150,8 @@ try{
  }
  // Animation may already be finished, so inspect the authored keyframes too.
  const animationCss=await page.locator('style[data-plugin="dsh-summary-panel"]').textContent();
- assert.match(animationCss,/@property --dsp-reveal/);
- assert.match(animationCss,/transform:translateX\(calc\(\(1 - var\(--dsp-reveal\)\) \* 100%\)\)/);
+ assert.ok(!animationCss.includes('@property --dsp-reveal'),'No inherited animation invalidating the whole transcript');
+ assert.match(animationCss,/transform:translateX\(100%\)/);
  assert.ok(cardBounds.height<=340,`Compact summary with four file previews and web sources is too tall: ${cardBounds.height}`);
  assert.ok(cardBounds.y-sceneBounds.y<=12,'Card starts near the top of the conversation scene');
  // A wide conversation retains the same center throughout the first drag.
@@ -170,7 +179,7 @@ try{
  await page.getByRole('button',{name:'查看全部 8 个文件',exact:true}).click();
  await page.locator('#right').getByRole('textbox',{name:'搜索摘要条目'}).waitFor();
  await page.waitForFunction(()=>document.querySelector('.dsp-independent-rail')?.dataset.state==='closing');
- assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal','Sidebar opening uses the shared close transition');
+ assert.match(await page.evaluate(()=>qa.motionTimings.filter(m=>m.panel).at(-1).to),/translateX\([1-9]/,'Sidebar opening slides the card out');
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});await settle();
  assert.equal(await page.locator('.dsp-content-shifted').count(),0,'Opening native sidebar returns the conversation to native layout');
  const assertReturnedLayout=async()=>{
@@ -259,7 +268,7 @@ try{
  assert.notEqual(themeResults.light.background,themeResults.dark.background);
  assert.notEqual(themeResults.light.color,themeResults.dark.color);
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
- assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionProperty),'--dsp-reveal');
+ assert.ok(await page.evaluate(()=>qa.motionTimings.some(m=>m.panel&&m.duration===240)));
  assert.equal(await rail.evaluate(el=>getComputedStyle(el).overflowX),'hidden');
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  const nativeOverlay=await bounds();
@@ -344,7 +353,7 @@ try{
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.getByRole('button',{name:'打开摘要面板',exact:true}).click();
- assert.equal(await page.locator('.dsp-session-open').evaluate(el=>getComputedStyle(el).transitionDuration),'0.001s');
+ assert.equal(await page.evaluate(()=>qa.motionTimings.filter(m=>m.panel).at(-1).duration),1);
  await page.getByRole('button',{name:'关闭摘要面板',exact:true}).click();
  await page.locator('.dsp-independent-rail').waitFor({state:'detached'});
  const nativeHandle=await page.locator('[data-width-handle=right]').boundingBox();
@@ -353,6 +362,7 @@ try{
  assert.equal(await page.evaluate(()=>qa.nativeDragStarts),1,'After closing, native width controls work normally');
  assert.equal(await page.locator('[data-dsp-layout-root]').count(),0,'Layout markers are removed on close');
  assert.deepEqual(errors,[]);
- const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','card and transcript share one reveal timeline','opening and closing match at five intermediate motion samples','visible text matches card progress in wide and narrow layouts','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','wide and narrow margins balance within two pixels','real pointer-down does not recenter text','dragging begins at displayed width','both handles continue from current manual width','manual preference persists without competing native drag','wide drag preserves its previous center axis','lost capture cancels cleanly','native width controls resume after closing','display-contents slot wrappers move with shared scroll layout','wide tables and code blocks stay inside available area','expanded sidebar keeps native geometry','opening sidebar animates summary closed','return restores prior open summary','manual overlay returns to balanced layout','rapid sidebar reversal cancels pending unmount','explicitly closed summary stays closed on return','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
+ const report={passed:true,bundleVersion:JSON.parse(readFileSync('package.json')).version,checks:['normal opening shifts text and composer away from card','card and transcript share one compositor timeline','no per-frame padding or width animation','opening and closing match at five intermediate motion samples','visible text matches card progress in wide and narrow layouts','wide text width preserved','narrow initial width fits available room','manual width may overlap without clipping left edge','wide and narrow margins balance within two pixels','real pointer-down does not recenter text','dragging begins at displayed width','both handles continue from current manual width','manual preference persists without competing native drag','wide drag preserves its previous center axis','lost capture cancels cleanly','native width controls resume after closing','display-contents slot wrappers move with shared scroll layout','wide tables and code blocks stay inside available area','expanded sidebar keeps native geometry','opening sidebar animates summary closed','return restores prior open summary','manual overlay returns to balanced layout','rapid sidebar reversal cancels pending unmount','explicitly closed summary stays closed on return','close restores native layout','horizontal slide and no horizontal scrollbar','rapid toggle reversal preserves one card','window resize keeps text in view','reduced motion uses minimal animation','independent summary remains compact','outputs open in right sidebar','file preview opens in right sidebar','sources open in right sidebar','detail search filters results','create keeps existing draft','attachment picker delegated','light/dark host theme','opaque card pixel comparison in both themes','card stacks above transcript and code toolbar','Codex white daytime card and unchanged nighttime palette','no title or close chrome','13px text','card at top of conversation','enter and exit animations','close removes portal','header prewarms session data','card and detail tabs share one feed','closed card keeps receiving updates','three reopenings without requests or loading flashes'],themeResults,errors};
  writeFileSync('qa/browser-acceptance.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+ }
 }finally{await browser.close();}

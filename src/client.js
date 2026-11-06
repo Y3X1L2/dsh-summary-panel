@@ -136,11 +136,11 @@ function apply(ctx) {
       if(!rendered)return;
       const session=[...document.querySelectorAll('[data-conversation-session]')].find(node=>node.dataset.conversationSession===sessionId && node.getClientRects().length>0);
       if(!session)return;
-      const seat=document.createElement('aside');seat.className='dsp-independent-rail';seat.dataset.state='open';seat.setAttribute('aria-label','会话摘要');
+      const seat=document.createElement('aside');seat.className='dsp-independent-rail';seat.dataset.state='closed';seat.setAttribute('aria-label','会话摘要');
       session.classList.add('dsp-session-open');session.append(seat);layout.current=attachSummaryLayout(session,seat,ctx.sidebarRight);setHost(seat);
       return ()=>{layout.current?.dispose();layout.current=null;setHost(null);seat.remove();session.classList.remove('dsp-session-open');};
     },[rendered,sessionId]);
-    React.useLayoutEffect(()=>{if(host){host.dataset.state=open?'open':'closing';layout.current?.setOpen(open);}},[host,open]);
+    React.useLayoutEffect(()=>{if(host)layout.current?.setOpen(open);},[host,open]);
     React.useEffect(()=>{
       if(open||!rendered)return;
       const timer=setTimeout(()=>setRendered(false),260);
